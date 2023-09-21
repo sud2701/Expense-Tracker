@@ -8,6 +8,7 @@ import ExpenseTable from './pages/ExpenseTable';
 import UserProvider from "./UserContext";
 import IncomeTable from './pages/IncomeTable';
 import Logout from './pages/Logout';
+import Settings from './pages/Settings';
 function App() {
   return (
 
@@ -21,6 +22,7 @@ function App() {
             <Route path="/main/dashboard" Component={Dashboard}></Route>
             <Route path="/main/expenses" Component={ExpenseTable}></Route>
             <Route path="/main/incomes" Component={IncomeTable}></Route>
+            <Route path="/main/settings" Component={Settings}></Route>
             <Route path="/logout" Component={Logout}></Route>
           </Routes>
         </UserProvider>

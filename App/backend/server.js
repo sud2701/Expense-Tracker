@@ -18,6 +18,7 @@ const corsOptions = {
 }
 
 
+
 mongoose.connect(URI)
     .then(() => {
         app.listen(PORT);
@@ -242,4 +243,113 @@ app.get("/incomes/year", async (req, res) => {
     } catch (err) {
         return res.status(400).json("Unable to fetch this year's incomes");
     }
+});
+
+app.get("/dashboard", async (req, res) => {
+    try {
+        const date = new Date();
+        const username = req.query.username;
+        const recent_expenses = await Expense.find({ user_name: username }).sort({ date_recorded: -1 }).limit(10);
+        const recent_incomes = await Income.find({ user_name: username }).sort({ date_recorded: -1 }).limit(10);
+        const this_expenses = await Expense.aggregate([
+            {
+                $match: {
+                    $expr: {
+                        $and: [
+                            { $eq: [{ $month: "$date_recorded" }, date.getMonth() + 1] },
+                            { $eq: [{ $year: "$date_recorded" }, date.getFullYear()] }
+                        ]
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: "$amount" }
+                }
+            }
+
+        ]);
+
+        const this_incomes = await Income.aggregate([
+            {
+                $match: {
+                    $expr: {
+                        $and: [
+                            { $eq: [{ $month: "$date_recorded" }, date.getMonth() + 1] },
+                            { $eq: [{ $year: "$date_recorded" }, date.getFullYear()] }
+                        ]
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: "$amount" }
+                }
+            }
+
+        ]);
+        const last_expenses = await Expense.aggregate([
+            {
+                $match: {
+                    $expr: {
+                        $and: [
+                            { $eq: [{ $month: "$date_recorded" }, date.getMonth()] },
+                            { $eq: [{ $year: "$date_recorded" }, date.getFullYear()] }
+                        ]
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: "$amount" }
+                }
+            }
+
+        ]);
+        const last_incomes = await Income.aggregate([
+            {
+                $match: {
+                    $expr: {
+                        $and: [
+                            { $eq: [{ $month: "$date_recorded" }, date.getMonth()] },
+                            { $eq: [{ $year: "$date_recorded" }, date.getFullYear()] }
+                        ]
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: "$amount" }
+                }
+            }
+
+        ]);
+        let this_expenses_total, this_incomes_total, last_expenses_total, last_incomes_total;
+        this_expenses_total = calculate(this_expenses);
+        this_incomes_total = calculate(this_incomes);
+        last_expenses_total = calculate(last_expenses);
+        last_incomes_total = calculate(last_incomes);
+        return res.status(200).json({ recent_expenses, recent_incomes, this_expenses_total, this_incomes_total, last_expenses_total, last_incomes_total });
+    }
+    catch (err) {
+        return res.status(400).json("Unable to load data");
+    }
+
+});
+
+app.post("link/paypal", async (req, res) => {
+
 })
+
+const calculate = (values) => {
+    if (values.length > 0) {
+        return values[0].total;
+    }
+    else {
+        return 0;
+    }
+}

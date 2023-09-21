@@ -50,7 +50,7 @@ const ExpenseTable = () => {
     return (
         <div className="flex h-screen bg-gray-200">
             <NavBar />
-            <div className="grid grid-cols-1 w-full justify-items-center h-max">
+            <div className="grid grid-cols-1 w-full justify-items-center overflow-y-auto">
                 <button
                     onClick={toggleAddExpense}
                     className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg my-4"

@@ -5,64 +5,72 @@ import IncomeItem from '../components/IncomeItem';
 import GoalCard from '../components/GoalCard';
 import { useNavigate } from "react-router-dom";
 import NavBar from "./Navbar";
+import Charts from "../components/Charts";
+const calculateIncrease = (p1, p2) => {
+    if (p1 > 0) {
+        return ((p2 - p1) * 100 / p1).toFixed(2);
+    }
+    else {
+        return 100;
+    }
+}
 const Dashboard = () => {
-    const expensesAmount = 1500;
-    const expensesPercentageChange = -10; // Negative for decrease
-    const incomesAmount = 2500;
-    const incomesPercentageChange = 15;
+    const [exp_curr, setExpCurr] = useState();
+    const [inc_curr, setIncCurr] = useState();
+    const [exp_change, setExpChange] = useState();
+    const [inc_change, setIncChange] = useState();
     const username = localStorage.getItem('username');
     const [expenses, setExpenses] = useState([]);
     const [incomes, setIncomes] = useState([]);
-    const page = 0;
-    const limit = 10;
     const navigate = useNavigate();
     useEffect(() => {
         if (username === null) {
             navigate("/login", { replace: true });
         } else {
             console.log(username);
-            const getData = async (url, setData) => {
-                const uri = `${url}?username=${username}&page=${page}&limit=${limit}`;
-                try {
-                    const res = await fetch(uri);
-                    console.log(res);
-                    const data = await res.json();
-                    console.log(data);
-                    if (res.ok) {
-                        if (data.length > 0)
-                            setData(data);
-                    } else {
-                        console.log("Error while fetching data");
-                    }
-                } catch (error) {
-                    console.error("Error fetching data:", error);
+            const loadDashboard = async () => {
+                const res = await fetch(`http://localhost:4000/dashboard?username=${username}`);
+                const total_data = await res.json();
+                if (res.ok) {
+                    console.log(total_data);
+                    setExpenses(total_data.recent_expenses);
+                    setIncomes(total_data.recent_incomes);
+                    setExpCurr(total_data.this_expenses_total);
+                    setIncCurr(total_data.this_incomes_total);
+                    setExpChange(calculateIncrease(total_data.last_expenses_total, total_data.this_expenses_total));
+                    setIncChange(calculateIncrease(total_data.last_incomes_total, total_data.this_incomes_total));
                 }
-            };
-            getData("http://localhost:4000/expenses", setExpenses);
-            getData("http://localhost:4000/incomes", setIncomes);
+                else {
+                    console.log("Unable to fetch this month's transaction data");
+                }
+            }
+            loadDashboard();
         }
 
     }, [username, navigate]);
+
+
 
 
     return (
         <div className="flex h-screen bg-gray-200">
             <NavBar />
             <div className="flex-1 p-6 overflow-y-auto">
+                <p className="font-bold text-lg my-2">Welcome, {username}</p>
                 {/* Chart Section */}
-
+                <Charts />
 
                 <div className="flex justify-center mx-2 my-10">
                     <div className="flex space-x-4">
                         <FinanceCard
                             title="Expenses this month"
-                            amount={expensesAmount}
-                            percentageChange={expensesPercentageChange}
+                            amount={exp_curr}
+                            percentageChange={exp_change}
                         />
                         <FinanceCard
                             title="Incomes this month"
-                            amount={incomesAmount}
-                            percentageChange={incomesPercentageChange}
+                            amount={inc_curr}
+                            percentageChange={inc_change}
                         />
                         <FinanceCard
                             title="Subscriptions this month"
