@@ -10,6 +10,8 @@ const app = express();
 const { User } = require('./models/UserModel');
 const { Expense } = require('./models/ExpenseModel');
 const { Income } = require('./models/IncomeModel');
+const { Goal } = require("./models/GoalModel");
+const { Subscription } = require("./models/SubscriptionModel");
 const cors = require('cors');
 const SIGN = process.env.SIGN;
 const corsOptions = {
@@ -343,6 +345,93 @@ app.get("/dashboard", async (req, res) => {
 
 app.post("link/paypal", async (req, res) => {
 
+});
+
+app.post("/goals", async (req, res) => {
+    const { username, category, amount, begins_On, expires_On } = req.body;
+    try {
+        const new_goal = await Goal.create({ username, category, amount, begins_On, expires_On });
+        if (new_goal) {
+            return res.status(201).json("New Goal Successfully Created");
+        }
+        else {
+            return res.status(400).json("Unable to create goal");
+        }
+    } catch (err) {
+        return res.status(400).json("Goal creation failed");
+    }
+});
+
+app.post("/subscriptions", async (req, res) => {
+    const { username, name, repeats, amount, begins_On, expires_On } = req.body;
+    try {
+        const new_sub = await Subscription.create({ name, repeats, amount, begins_On, expires_On, username });
+        if (new_sub) {
+            return res.status(201).json("New Subscription created");
+        }
+        else {
+            return res.status(500).json("Unable to create subscription");
+        }
+    } catch (err) {
+        return res.status(500).json("Subsription creation failed");
+    }
+});
+
+app.get("/goals", async (req, res) => {
+    const username = req.query.username;
+    const category = req.query.category;
+    let goals;
+    const date = new Date();
+    try {
+        if (category !== null) {
+            goals = await Goal.find({
+                username: username,
+                category: category,
+                $expr: {
+                    $and: [
+                        { $gt: ["$expires_On", date] },
+                        { $lt: ["$begins_On", date] }
+                    ]
+                }
+            });
+        } else {
+            goals = await Goal.find({
+                username: username,
+                $expr: {
+                    $and: [
+                        { $gt: ["$expires_On", date] },
+                        { $lt: ["$begins_On", date] }
+                    ]
+                }
+            });
+        }
+        return res.status(200).json(goals);
+
+    }
+    catch (err) {
+        return res.status(400).json(err.message);
+    }
+});
+
+app.get("/subscriptions", async (req, res) => {
+    const username = req.query.username;
+    const date = new Date();
+    try {
+        const subs = await Subscription.find({
+            username: username,
+            $expr: {
+                $and: [
+                    { $gt: ["$expires_On", date] },
+                    { $lt: ["$begins_On", date] }
+                ]
+            }
+        });
+
+        return res.status(200).json(subs);
+
+    } catch (err) {
+        return res.status(400).json(err.message);
+    }
 })
 
 const calculate = (values) => {

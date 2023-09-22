@@ -106,6 +106,27 @@ const NavBar = () => {
                     </li>
                     <li className="mb-2">
                         <a
+                            href="/main/goalsandsubs"
+                            className="flex items-center text-white hover:bg-blue-800 px-4 py-2 rounded-lg"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5 mr-2"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                            >
+                                {/* Replace with the icon for Dashboard */}
+                                <path
+                                    fillRule="evenodd"
+                                    d="M2 4a2 2 0 012-2h3a1 1 0 010 2H4v11a2 2 0 002 2h10a2 2 0 002-2v-3a1 1 0 012 0v3a4 4 0 01-4 4H6a4 4 0 01-4-4V4z"
+                                    clipRule="evenodd"
+                                />
+                            </svg>
+                            Goals and Subscriptions
+                        </a>
+                    </li>
+                    <li className="mb-2">
+                        <a
                             href="/logout"
                             className="flex items-center text-white hover:bg-blue-800 px-4 py-2 rounded-lg"
                         >

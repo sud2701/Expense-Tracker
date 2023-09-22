@@ -1,5 +1,4 @@
-import mongoose from "mongoose";
-
+const mongoose = require('mongoose');
 const schema = mongoose.Schema;
 
 const subscriptionSchema = new schema({
@@ -21,9 +20,17 @@ const subscriptionSchema = new schema({
         required: true,
         validate: [(n) => { return n > 0; }, "Subscription Amount should be greater than zero"]
     },
+    begins_On: {
+        type: Date,
+        required: true
+    },
     expires_On: {
         type: Date,
         required: true,
+    },
+    username: {
+        type: String,
+        required: true
     }
 })
 

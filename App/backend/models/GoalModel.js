@@ -1,5 +1,4 @@
-import mongoose from "mongoose";
-
+const mongoose = require('mongoose');
 const schema = mongoose.Schema;
 
 const goalSchema = new schema({
@@ -18,6 +17,10 @@ const goalSchema = new schema({
     },
     username: {
         type: String,
+        required: true
+    },
+    begins_On: {
+        type: Date,
         required: true
     },
     expires_On: {
