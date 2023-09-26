@@ -107,7 +107,7 @@ app.post("/login", async (req, res) => {
     const { username, password } = req.body;
     try {
         const user = await User.login(username, password);
-        res.status(200).json({ msg: "Login Successful" });
+        res.status(200).json({ firstname: user.firstname, lastname: user.lastname, email: user.email, username: user.username });
     }
     catch (err) {
         res.status(400).json({ error: err.message });
@@ -135,7 +135,7 @@ app.post("/signup", async (req, res) => {
                 if (validator.isStrongPassword(password)) {
                     const new_user = await User.create({ firstname: firstname, lastname: lastname, email: email, username: username, password: password });
                     if (new_user) {
-                        res.status(200).send({ msg: "Login Successful" });
+                        res.status(200).send({ firstname, lastname, email, username });
                     }
                     else {
                         res.status(400).send({ error: "Registration failed, please try again" });
@@ -167,7 +167,7 @@ app.get("/expenses/month", async (req, res) => {
             return res.status(200).json(expenses);
         }
         else {
-            return res.status(202).json("No expenses this month");
+            return res.status(202).json([]);
         }
     } catch (err) {
         return res.status(400).json("Unable to fetch this month's expenses");
@@ -192,7 +192,7 @@ app.get("/incomes/month", async (req, res) => {
             return res.status(200).json(incomes);
         }
         else {
-            return res.status(202).json("No incomes this month");
+            return res.status(202).json([]);
         }
     } catch (err) {
         return res.status(400).json("Unable to fetch this month's incomes");
@@ -216,7 +216,7 @@ app.get("/expenses/year", async (req, res) => {
             return res.status(200).json(expenses);
         }
         else {
-            return res.status(202).json("No expenses this year");
+            return res.status(202).json([]);
         }
     } catch (err) {
         return res.status(400).json("Unable to fetch this year's expenses");
@@ -240,7 +240,7 @@ app.get("/incomes/year", async (req, res) => {
             return res.status(200).json(incomes);
         }
         else {
-            return res.status(202).json("No incomes this year");
+            return res.status(202).json([]);
         }
     } catch (err) {
         return res.status(400).json("Unable to fetch this year's incomes");
@@ -251,11 +251,13 @@ app.get("/dashboard", async (req, res) => {
     try {
         const date = new Date();
         const username = req.query.username;
-        const recent_expenses = await Expense.find({ user_name: username }).sort({ date_recorded: -1 }).limit(10);
-        const recent_incomes = await Income.find({ user_name: username }).sort({ date_recorded: -1 }).limit(10);
+        const recent_expenses = await Expense.find({ user_name: username }).sort({ date_recorded: -1 }).limit(5);
+        const recent_incomes = await Income.find({ user_name: username }).sort({ date_recorded: -1 }).limit(5);
         const this_expenses = await Expense.aggregate([
             {
+
                 $match: {
+                    user_name: username,
                     $expr: {
                         $and: [
                             { $eq: [{ $month: "$date_recorded" }, date.getMonth() + 1] },
@@ -275,7 +277,9 @@ app.get("/dashboard", async (req, res) => {
 
         const this_incomes = await Income.aggregate([
             {
+
                 $match: {
+                    user_name: username,
                     $expr: {
                         $and: [
                             { $eq: [{ $month: "$date_recorded" }, date.getMonth() + 1] },
@@ -294,7 +298,9 @@ app.get("/dashboard", async (req, res) => {
         ]);
         const last_expenses = await Expense.aggregate([
             {
+
                 $match: {
+                    user_name: username,
                     $expr: {
                         $and: [
                             { $eq: [{ $month: "$date_recorded" }, date.getMonth()] },
@@ -313,7 +319,9 @@ app.get("/dashboard", async (req, res) => {
         ]);
         const last_incomes = await Income.aggregate([
             {
+
                 $match: {
+                    user_name: username,
                     $expr: {
                         $and: [
                             { $eq: [{ $month: "$date_recorded" }, date.getMonth()] },
@@ -379,32 +387,15 @@ app.post("/subscriptions", async (req, res) => {
 
 app.get("/goals", async (req, res) => {
     const username = req.query.username;
-    const category = req.query.category;
     let goals;
     const date = new Date();
     try {
-        if (category !== null) {
-            goals = await Goal.find({
-                username: username,
-                category: category,
-                $expr: {
-                    $and: [
-                        { $gt: ["$expires_On", date] },
-                        { $lt: ["$begins_On", date] }
-                    ]
-                }
-            });
-        } else {
-            goals = await Goal.find({
-                username: username,
-                $expr: {
-                    $and: [
-                        { $gt: ["$expires_On", date] },
-                        { $lt: ["$begins_On", date] }
-                    ]
-                }
-            });
-        }
+
+        goals = await Goal.find({
+            username: username,
+            expires_On: { $gt: date },
+            begins_On: { $lt: date }
+        });
         return res.status(200).json(goals);
 
     }
@@ -419,12 +410,8 @@ app.get("/subscriptions", async (req, res) => {
     try {
         const subs = await Subscription.find({
             username: username,
-            $expr: {
-                $and: [
-                    { $gt: ["$expires_On", date] },
-                    { $lt: ["$begins_On", date] }
-                ]
-            }
+            expires_On: { $gt: date },
+            begins_On: { $lt: date }
         });
 
         return res.status(200).json(subs);
@@ -432,6 +419,81 @@ app.get("/subscriptions", async (req, res) => {
     } catch (err) {
         return res.status(400).json(err.message);
     }
+})
+
+app.get("/monthly-expense-aggregates", async (req, res) => {
+    const username = req.query.username;
+    const date = new Date();
+    let month = date.getMonth();
+    let year = date.getFullYear();
+    let aggregates = [];
+    for (let i = 0; i < 5; i++) {
+        if (month < 0) {
+            month = 11;
+            year -= 1;
+        }
+        let agg = await Expense.aggregate([
+            {
+                $match: {
+                    user_name: username,
+                    $expr: {
+                        $and: [
+                            { $eq: [{ $month: "$date_recorded" }, month + 1] },
+                            { $eq: [{ $year: "$date_recorded" }, year] }
+                        ]
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: "$amount" }
+                }
+            }
+
+        ]);
+        aggregates.push(agg);
+        month--;
+    }
+    return res.status(200).json(aggregates);
+})
+
+app.get("/monthly-income-aggregates", async (req, res) => {
+    const username = req.query.username;
+    const date = new Date();
+    let month = date.getMonth();
+    let year = date.getFullYear();
+    let aggregates = [];
+    for (let i = 0; i < 5; i++) {
+        if (month < 0) {
+            month = 11;
+            year -= 1;
+        }
+        let agg = await Income.aggregate([
+            {
+
+                $match: {
+                    user_name: username,
+                    $expr: {
+                        $and: [
+                            { $eq: [{ $month: "$date_recorded" }, month + 1] },
+                            { $eq: [{ $year: "$date_recorded" }, year] }
+                        ]
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: "$amount" }
+                }
+            }
+
+        ]);
+        aggregates.push(agg);
+        month--;
+    }
+    return res.status(200).json(aggregates);
 })
 
 const calculate = (values) => {

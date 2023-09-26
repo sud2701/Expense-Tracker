@@ -22,9 +22,12 @@ const Signup = () => {
             credentials: 'include'
         });
         let sign_up = await res.json();
-        if (sign_up.msg) {
+        if (res.ok) {
             usernameContext.setUsername(user_name);
             localStorage.setItem('username', user_name);
+            localStorage.setItem('firstname', sign_up.firstname);
+            localStorage.setItem('lastname', sign_up.lastname);
+            localStorage.setItem('email', sign_up.email)
             navigate("/main/dashboard");
         }
         else {
@@ -36,7 +39,7 @@ const Signup = () => {
         if (usernameContext.username) {
             navigate("/dashboard");
         }
-    }, []);
+    });
 
     return (
         <div className="flex items-center justify-center h-screen">

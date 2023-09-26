@@ -32,7 +32,7 @@ const Dashboard = () => {
                 const res = await fetch(`http://localhost:4000/dashboard?username=${username}`);
                 const total_data = await res.json();
                 if (res.ok) {
-                    console.log(total_data);
+
                     setExpenses(total_data.recent_expenses);
                     setIncomes(total_data.recent_incomes);
                     setExpCurr(total_data.this_expenses_total);
@@ -52,10 +52,13 @@ const Dashboard = () => {
 
 
 
+
+
     return (
         <div className="flex h-screen bg-gray-200">
             <NavBar />
-            <div className="flex-1 p-6 overflow-y-auto">
+            <div className="flex-1 py-6 px-6 overflow-y-auto">
+                <p>Paypal Username: </p>
                 <p className="font-bold text-lg my-2">Welcome, {username}</p>
                 {/* Chart Section */}
                 <Charts />

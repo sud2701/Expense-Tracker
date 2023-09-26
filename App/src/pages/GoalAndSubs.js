@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import GoalList from '../components/GoalList';
-import SubscriptionList from '../components/SubscriptionList';
+
 import CreateGoalModal from '../components/CreateGoalModal';
 import CreateSubscriptionModal from '../components/CreateSubscriptionModal';
 import NavBar from './Navbar';
 import { useEffect } from 'react';
+import { formatDate } from '../utils/functions';
 function GoalAndSubs() {
     const username = localStorage.getItem('username');
     const [goals, setGoals] = useState([]);
@@ -34,6 +34,7 @@ function GoalAndSubs() {
                 const res = await fetch(url);
                 const data = await res.json();
                 if (res.ok) {
+                    console.log(data);
                     setData(data);
                 }
             }
@@ -43,7 +44,7 @@ function GoalAndSubs() {
         }
         getData(`http://localhost:4000/goals?username=${username}`, setGoals);
         getData(`http://localhost:4000/subscriptions?username=${username}`, setSubs);
-    }, [goals, subs]);
+    }, [username]);
 
     return (
         <div className="flex h-screen bg-gray-200">
@@ -65,8 +66,43 @@ function GoalAndSubs() {
                     Create New Subscription
                 </button>
 
-                <GoalList goals={goals} />
-                <SubscriptionList subscriptions={subs} />
+                <div className="mt-4">
+                    <h2 className="text-xl font-semibold mb-2">Goals</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {goals.map((goal, index) => (
+                            <div key={index} className="bg-white rounded-lg shadow-md p-4">
+                                <h3 className="text-lg font-semibold mb-2">Goal {index + 1}</h3>
+                                <p>
+                                    <strong>Amount:</strong> {goal.amount}
+                                </p>
+                                <p>
+                                    <strong>Category:</strong> {goal.category}
+                                </p>
+                                <p>
+                                    <strong>Begin Date:</strong> {formatDate(goal.begins_On)}
+                                </p>
+                                <p>
+                                    <strong>Expiration Date:</strong> {formatDate(goal.expires_On)}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="mt-4">
+                    <h2 className="text-xl font-semibold mb-2">Subscriptions</h2>
+                    <ul>
+                        {subs.map((subscription, index) => (
+                            <li key={index} className="mb-2">
+                                <strong>Name:</strong> {subscription.name},{' '}
+                                <strong>Amount:</strong> {subscription.amount},{' '}
+                                <strong>Begin Date:</strong> {subscription.begins_On},{' '}
+                                <strong>Expiration Date:</strong> {subscription.expires_On},{' '}
+                                <strong>Repeats:</strong> {subscription.repeats}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
 
                 {showCreateGoalModal && (
                     <CreateGoalModal isOpen={showCreateGoalModal} onClose={closeCreateGoalModal} />

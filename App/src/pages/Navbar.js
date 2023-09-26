@@ -1,6 +1,18 @@
 import React from 'react';
-
+import { useEffect, useState } from 'react';
 const NavBar = () => {
+    const [username, setusername] = useState("");
+    const [email, setemail] = useState("");
+    // const [firstname, setfirstname] = useState("");
+    // const [lastname, setlastname] = useState("");
+
+
+    useEffect(() => {
+        setusername(localStorage.getItem('username'));
+        setemail(localStorage.getItem('email'));
+        // setfirstname(localStorage.getItem('firstname'));
+        // setlastname(localStorage.getItem('lastname'));
+    }, [])
     return (
 
         <div className="bg-blue-600 text-white w-1/6 p-4 overflow-hidden">
@@ -12,8 +24,8 @@ const NavBar = () => {
                     className="w-12 h-12 rounded-full mr-2"
                 />
                 <div>
-                    <p className="text-lg font-semibold">User Name</p>
-                    <p className="text-xs">user@example.com</p>
+                    <p className="text-lg font-semibold">{username}</p>
+                    <p className="text-xs">{email}</p>
                 </div>
             </div>
 

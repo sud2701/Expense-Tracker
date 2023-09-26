@@ -20,9 +20,12 @@ const Login = () => {
             credentials: 'include'
         });
         const sign_in = await res.json();
-        if (sign_in.msg) {
+        if (res.ok) {
             usernameContext.setUsername(user_name);
             localStorage.setItem('username', user_name);
+            localStorage.setItem('firstname', sign_in.firstname);
+            localStorage.setItem('lastname', sign_in.lastname);
+            localStorage.setItem('email', sign_in.email);
             navigate("/main/dashboard");
         } else {
             console.log(sign_in.error);
