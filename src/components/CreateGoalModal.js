@@ -1,8 +1,11 @@
 // CreateGoalModal.js
 import React, { useState } from 'react';
+import { getNextHalfYear, getStartAndEndDate } from '../utils/functions';
+
 const CreateGoalModal = ({ isOpen, onClose }) => {
     const categories = ['Income', 'Expense', 'Subscription'];
     const username = localStorage.getItem('username');
+    const months = getNextHalfYear();
     const [formData, setFormData] = useState({
         amount: '',
         category: 'Income',
@@ -18,11 +21,22 @@ const CreateGoalModal = ({ isOpen, onClose }) => {
         });
     };
 
+    const handleMonth = (e) => {
+        const { value } = e.target;
+        const [startdate, enddate] = getStartAndEndDate(value);
+        console.log(startdate);
+        console.log(enddate);
+        setFormData({
+            ...formData,
+            beginDate: startdate,
+            expirationDate: enddate
+        });
+        console.log(formData.beginDate);
+        console.log(formData.expirationDate);
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // Add logic to handle the submission of a new goal
-        // You can send the formData to an API or update the state
-        // Close the modal after successful submission
         const res = await fetch("http://localhost:4000/goals", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -64,6 +78,7 @@ const CreateGoalModal = ({ isOpen, onClose }) => {
                             name="category"
                             onChange={handleInputChange}
                         >
+
                             {categories.map((expense, index) => {
                                 return (
                                     <option value={expense} key={index}>{expense}</option>
@@ -72,22 +87,19 @@ const CreateGoalModal = ({ isOpen, onClose }) => {
                         </select>
                     </div>
                     <div className="mb-4">
-                        <label className="block text-gray-600">Begin Date:</label>
-                        <input
-                            type="date"
-                            name="beginDate"
-
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label className="block text-gray-600">End Date:</label>
-                        <input
-                            type="date"
-                            name="expirationDate"
-
-                            onChange={handleInputChange}
-                        />
+                        <label className="block text-gray-600">Concerned Period</label>
+                        <select
+                            className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                            name="month"
+                            onChange={handleMonth}
+                        >
+                            <option key={-1}>Select Month</option>
+                            {months.map((expense, index) => {
+                                return (
+                                    <option value={expense} key={index}>{expense}</option>
+                                );
+                            })}
+                        </select>
                     </div>
                     <button
                         onClick={onClose}

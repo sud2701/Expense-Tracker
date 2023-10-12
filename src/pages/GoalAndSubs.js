@@ -5,6 +5,12 @@ import CreateSubscriptionModal from '../components/CreateSubscriptionModal';
 import NavBar from './Navbar';
 import { useEffect } from 'react';
 import { formatDate } from '../utils/functions';
+
+const colors = {
+    'Expense': 'bg-gradient-to-r from-red-400 to-red-500',
+    'Income': 'bg-gradient-to-r from-blue-400 to-blue-500',
+    'Subscription': 'bg-gradient-to-r from-teal-400 to-teal-500'
+}
 function GoalAndSubs() {
     const username = localStorage.getItem('username');
     const [goals, setGoals] = useState([]);
@@ -68,21 +74,15 @@ function GoalAndSubs() {
 
                 <div className="mt-4">
                     <h2 className="text-xl font-semibold mb-2">Goals</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mx-8">
                         {goals.map((goal, index) => (
-                            <div key={index} className="bg-white rounded-lg shadow-md p-4">
-                                <h3 className="text-lg font-semibold mb-2">Goal {index + 1}</h3>
-                                <p>
-                                    <strong>Amount:</strong> {goal.amount}
+                            <div key={index} className={`${colors[goal.category]} text-white rounded-xl shadow-lg p-4 flex flex-col justify-center items-center`}>
+                                <h3 className="text-lg font-semibold">{goal.category} Goal</h3>
+                                <p className="font-bold text-xl justify-center m-10">
+                                    ${goal.amount}
                                 </p>
                                 <p>
-                                    <strong>Category:</strong> {goal.category}
-                                </p>
-                                <p>
-                                    <strong>Begin Date:</strong> {formatDate(goal.begins_On)}
-                                </p>
-                                <p>
-                                    <strong>Expiration Date:</strong> {formatDate(goal.expires_On)}
+                                    {formatDate(goal.begins_On)} - {formatDate(goal.expires_On)}
                                 </p>
                             </div>
                         ))}

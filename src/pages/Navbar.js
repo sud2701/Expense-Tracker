@@ -15,7 +15,7 @@ const NavBar = () => {
     }, [])
     return (
 
-        <div className="bg-blue-600 text-white w-1/6 p-4 overflow-hidden">
+        <div className="bg-blue-600 text-white w-1/5 p-4 overflow-hidden">
             {/* User Profile Section */}
             <div className="flex items-center mb-6">
                 <img
