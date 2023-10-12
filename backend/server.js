@@ -561,36 +561,6 @@ app.get("/life-incomes", async (req, res) => {
 
 });
 
-app.get('/api/widget_urls', async (req, res) => {
-
-    const client_id = 'c0192e80-ac1e-437e-a217-570918238eb2';
-    const api_key = 'fc4c3a1e2d6dba1530a8c810714e6f11a6f75a72';
-    const buffer = Buffer.from(`${client_id}:${api_key}`).toString('base64')
-    const url = `https://int-api.mx.com/users/USR-${buffer}/widget_urls`;
-    const requestBody = {
-        widget_url: {
-            widget_type: 'connect_widget',
-            color_scheme: 'dark',
-            mode: 'verification',
-        },
-    };
-
-    const headers = {
-        'Accept': 'application/vnd.mx.api.v1+json',
-        'Content-Type': 'application/json',
-        'Authorization': `Basic ${Buffer.from(`${client_id}:${api_key}`).toString('base64')}`,
-    };
-
-    try {
-        const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(requestBody) });
-        const data = await response.json();
-        console.log('URL data: ', data);
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
 const calculate = (values) => {
     if (values.length > 0) {
         return values[0].total;
